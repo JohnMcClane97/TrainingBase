@@ -4,7 +4,7 @@ from PySimpleGUI import Window, Button, Text, InputText
 from PySimpleGUI.PySimpleGUI import Cancel, Listbox, Input, TabGroup, Tab
 from pymongo import MongoClient
 
-client = MongoClient("mongodb+srv://Johnisa1997:Kladdkaka97@trainingdata.6ltsv.mongodb.net/test")
+client = MongoClient("mongodb://localhost:27017/")
 db = client["Personal_Bests"]
 db["John"]
 db["Elin"]
@@ -14,7 +14,6 @@ scoreboard = sg.Listbox(values=[" "," "," "], key='Scoreboard', enable_events=Tr
 date = Text(size=(10,1))
 exercise = Text(size=(10,1))
 progress = Text(size=(10,1))
-count = Text(size=(10,1))
 score = Text(size=(10,1))
 
 new_user = sg.Combo(db.list_collection_names(), size=(10,1), readonly=True, key="user_list")
@@ -28,8 +27,6 @@ new_date = sg.CalendarButton('Calendar', target='calendar', pad=None, font=('MS 
 show_new_date = Text(size=(10,1))
 new_exercise = Input(size=(10,1))
 new_score = Input(size=(10,1))
-new_set = Input(size=(10,1))
-new_rep = Input(size=(10,1))
 new_unit = Input(size=(10,1))
 
 #main window
@@ -37,8 +34,6 @@ Insert_layout = [[Text("Enter new record")],
                 [Text("User:", size=(12,1)), new_user],
                 [Text("Excersise name:", size=(12,1)), new_exercise],
                 [Text("Personal best:", size=(12,1)), new_score],
-                [Text("Sets:", size=(12,1)), new_set],
-                [Text("Reps:", size=(12,1)), new_rep],
                 [Text("Unit:", size=(12,1)), new_unit],
                 [Text("Date:"), calendar, new_date, show_new_date],
                 [Button("Submit")]]
@@ -49,7 +44,6 @@ Search_layout = [[Text("Search old record")],
                 [Button('Update')], 
                 [Text("Excersise name:", size=(12,1)), exercise],
                 [Text("Personal best:", size=(12,1)), score],
-                [Text("Reps x Sets:", size=(12,1)), count],
                 [Text("Progress:", size=(12,1)), progress],
                 [Text("Date:", size=(12,1)), date]]
 
@@ -89,33 +83,31 @@ while True:
         date_string = calendar.get()
         show_new_date.update(date_string)
 
-    elif event == 'Submit' and new_user.get() and new_exercise.get() and new_unit.get() and new_score.get() and new_set.get() and new_rep.get():
-        db[new_user.get()].insert_one({'exercise': new_exercise.get(), 'score': float(new_score.get()), 'unit': new_unit.get(),  'Sets': new_set.get(),  'Reps': new_rep.get(),'date': calendar.get()})
+    elif event == 'Submit' and new_user.get() and new_exercise.get() and new_unit.get() and new_score.get():
+        db[new_user.get()].insert_one({'exercise': new_exercise.get(), 'score': float(new_score.get()), 'unit': new_unit.get(), 'date': calendar.get()})
         new_user.update('')
         new_exercise.update('')
         new_score.update('')
         new_unit.update('')
-        new_rep.update('')
-        new_set.update('')
         show_new_date.update('')
 
     #search
     elif event == 'Scoreboard':
-        update(scoreboard_user.get())
         data = db[scoreboard_user.get()].find({'exercise': scoreboard.get()[0]}) 
 
         #Find highscore if more than one item
         highscore = {}
-        last_score = 0
+        last_score = ''
         for item in data: 
+            print(item['score'] > last_score)
             if item['score'] > last_score:
                 highscore = item
             last_score = item['score']
+        print(highscore)
         data = highscore
 
         exercise.update(data['exercise'])
-        score.update('{} {}'.format(data['score'], data['unit']))
-        count.update('{}x{}'.format(data['Reps'], data['Sets']))
+        score.update(data['score'] + ' ' + data['unit'])
         date.update(data['date'])
         
     elif event == 'Update':
