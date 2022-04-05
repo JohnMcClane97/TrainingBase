@@ -12,10 +12,6 @@ db["Elin"]
 sg.theme('topanga')
 scoreboard = sg.Listbox(values=[" "," "," "], key='Scoreboard', enable_events=True, size=(30,10), no_scrollbar=True)
 date = Text(size=(10,1))
-exercise = Text(size=(10,1))
-progress = Text(size=(10,1))
-count = Text(size=(10,1))
-score = Text(size=(10,1))
 
 new_user = sg.Combo(db.list_collection_names(), size=(10,1), readonly=True, key="user_list")
 scoreboard_user = sg.Combo(db.list_collection_names(), size=(10,1), readonly=True, key="user_choice", enable_events=True)
@@ -47,10 +43,6 @@ Search_layout = [[Text("Search old record")],
                 [scoreboard_user],
                 [scoreboard],
                 [Button('Update')], 
-                [Text("Excersise name:", size=(12,1)), exercise],
-                [Text("Personal best:", size=(12,1)), score],
-                [Text("Reps x Sets:", size=(12,1)), count],
-                [Text("Progress:", size=(12,1)), progress],
                 [Text("Date:", size=(12,1)), date]]
 
 delete_layout = [[Text("Delete score")],
@@ -75,7 +67,7 @@ while True:
             if value['exercise'] == '':
                 insert_name = 'Empty'
             else:
-                insert_name = value['exercise']
+                insert_name = '{} {} {} {}x{}'.format(value['exercise'], value['score'], value['unit'], value['sets'], value['reps'])
             scores.append(insert_name)
         window['Scoreboard'].Update(values= scores)
     event, values = window.read()
@@ -90,7 +82,7 @@ while True:
         show_new_date.update(date_string)
 
     elif event == 'Submit' and new_user.get() and new_exercise.get() and new_unit.get() and new_score.get() and new_set.get() and new_rep.get():
-        db[new_user.get()].insert_one({'exercise': new_exercise.get(), 'score': float(new_score.get()), 'unit': new_unit.get(),  'Sets': new_set.get(),  'Reps': new_rep.get(),'date': calendar.get()})
+        db[new_user.get()].insert_one({'exercise': new_exercise.get(), 'score': float(new_score.get()), 'unit': new_unit.get(),  'sets': new_set.get(),  'reps': new_rep.get(),'date': calendar.get()})
         new_user.update('')
         new_exercise.update('')
         new_score.update('')
@@ -98,25 +90,6 @@ while True:
         new_rep.update('')
         new_set.update('')
         show_new_date.update('')
-
-    #search
-    elif event == 'Scoreboard':
-        update(scoreboard_user.get())
-        data = db[scoreboard_user.get()].find({'exercise': scoreboard.get()[0]}) 
-
-        #Find highscore if more than one item
-        highscore = {}
-        last_score = 0
-        for item in data: 
-            if item['score'] > last_score:
-                highscore = item
-            last_score = item['score']
-        data = highscore
-
-        exercise.update(data['exercise'])
-        score.update('{} {}'.format(data['score'], data['unit']))
-        count.update('{}x{}'.format(data['Reps'], data['Sets']))
-        date.update(data['date'])
         
     elif event == 'Update':
         update(scoreboard_user.get())
