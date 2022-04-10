@@ -28,6 +28,7 @@ new_set = Input(size=(10,1))
 new_rep = Input(size=(10,1))
 new_unit = Input(size=(10,1))
 
+new_workout_picture = sg.FileBrowse('Browse', file_types=(("Images", "*.jpg"),), initial_folder=r"C:\Users\John\Desktop", target="workout_picture")
 #main window
 Insert_layout = [[Text("Enter new record")], 
                 [Text("User:", size=(12,1)), new_user],
@@ -50,9 +51,14 @@ delete_layout = [[Text("Delete score")],
                 [delete_instances_list],
                 [Button("Delete")]]
 
+workout_layout = [[Text("Workouts")],
+                 [Text("Search workout picture:")],
+                 [new_workout_picture]]
+
 main_layout = [[ TabGroup([[ Tab("Search", Search_layout)],
                 [Tab("New", Insert_layout)],
-                [Tab("Delete", delete_layout)]])]]
+                [Tab("Delete", delete_layout)],
+                [Tab("Workout", workout_layout)]])]]
 #ready to delete window
 delete_window_layout = [[Text("Are you sure you want to delete?")],
 [Button("Yes"), Button("No")]]
@@ -112,6 +118,10 @@ while True:
             db[user_delete_instance.get()].delete_one({'exercise': delete_instances_list.get()})
         delete_window.close()
         delete_instances_list.update('')
+
+    elif event == "workout_picture":
+        picture = new_workout_picture.get()
+        sg.popup_get_text(message="write name:")
 
 window.close()
 
